@@ -1,38 +1,68 @@
 import 'package:flutter/material.dart';
 
-class MyBody extends StatefulWidget {
-  const MyBody({super.key});
-  
+class MyForm extends StatefulWidget {
+  const MyForm({super.key});
+
   @override
-  State<MyBody> createState() => _MyBodyState();
+  State<MyForm> createState() => _MyFormState();
 }
 
-class _MyBodyState extends State<MyBody> {
-  final List<String> _array = [];
+class _MyFormState extends State<MyForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(itemBuilder: (context, i) {
-      print('num $i : нечетное = ${i.isOdd}');
-
-      if (i.isOdd) return const Divider();
-
-      final index = i ~/ 2;
-
-      print('index $index');
-      print('length ${_array.length}');
-
-      if (index >= _array.length) {
-        _array.addAll(['$index', '${index + 1}', '${index + 2}']);
-      }
-
-      return ListTile(
-        title: Text(_array[index]),
-      );
-    },);
+    return Form(
+      key: _formKey,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextFormField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Имя',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Введите имя';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _emailController,
+              decoration: const InputDecoration(
+                labelText: 'email',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Введите email';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: (){
+                if (_formKey.currentState!.validate()) {
+                  print('Имя: ${_nameController.text}');
+                  print('email: ${_emailController.text}');
+                }
+              }, 
+              child: const Text('Отправить')
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
-
 void main() => runApp(const MainApp());
 
 class MainApp extends StatelessWidget {
@@ -45,7 +75,7 @@ class MainApp extends StatelessWidget {
       home: Scaffold(
         appBar: AppBar(title: Text('App')),
         body: Center(
-          child: MyBody()
+          child: MyForm()
           )
       ),
     );
