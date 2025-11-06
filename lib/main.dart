@@ -1,81 +1,75 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
-class MainScreen extends StatelessWidget {
-  const MainScreen({super.key});
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  int _currentTime = 0;
+  bool _isRunning = false;
+  Timer? _timer;
+
+  void _startTimer() {
+    if (_isRunning) return;
+    
+    setState(() {
+      _isRunning = true;
+      _currentTime = 100;
+    });
+
+    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      setState(() {
+        _currentTime--;
+      });
+      
+      if (_currentTime <= 0) {
+        _stopTimer();
+      }
+    });
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    setState(() {
+      _isRunning = false;
+      _currentTime = 0;
+    });
+  }
+
+  void _restartTimer() {
+    _stopTimer();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();  
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Главное меню')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Text(
+              'Time is: $_currentTime',
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  '/second',
-                  arguments: {
-                    'title': 'Первый вариант',
-                    'count': 10,
-                    'isActive': true,
-                  },
-                );
-              }, 
-              child: const Text('Вариант 1'),
+              onPressed: _isRunning ? null : _startTimer,
+              child: Text(_isRunning ? 'Running...' : 'Start'),
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  '/second',
-                  arguments: {
-                    'title': 'Второй вариант',
-                    'count': 20,
-                    'isActive': false,
-                  },
-                );
-              }, 
-              child: const Text('Вариант 2'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class SecondScreen extends StatelessWidget {
-  final String title;
-  final int count;
-  final bool isActive;
-  
-  const SecondScreen({
-    super.key,
-    required this.title,
-    required this.count,
-    required this.isActive,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Заголовок: $title', style: const TextStyle(fontSize: 20)),
-            Text('Число: $count', style: const TextStyle(fontSize: 18)),
-            Text('Активно: $isActive', style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              }, 
-              child: const Text('Назад'),
+              onPressed: _restartTimer,
+              child: const Text('Restart'),
             ),
           ],
         ),
@@ -91,33 +85,6 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const MainScreen(),
-      },
-      onGenerateRoute: (RouteSettings settings) {
-        switch (settings.name) {
-          case '/second':
-            final args = settings.arguments as Map<String, dynamic>? ?? {};
-            
-            return MaterialPageRoute(
-              builder: (context) => SecondScreen(
-                title: args['title'] ?? 'Без названия',
-                count: args['count'] ?? 0,
-                isActive: args['isActive'] ?? false,
-              ),
-            );
-          
-          default:
-            return MaterialPageRoute(
-              builder: (context) => const Scaffold(
-                body: Center(child: Text('Страница не найдена')),
-              ),
-            );
-        }
-      },
-    );
+    return MaterialApp(home: MyApp());
   }
 }
