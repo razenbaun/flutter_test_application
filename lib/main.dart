@@ -1,61 +1,44 @@
 import 'package:flutter/material.dart';
 
-class MyForm extends StatefulWidget {
-  const MyForm({super.key});
-
-  @override
-  State<MyForm> createState() => _MyFormState();
-}
-
-class _MyFormState extends State<MyForm> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
+class MainScreen extends StatelessWidget {
+  const MainScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Главное меню')),
+      body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Имя',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Введите имя';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'email',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Введите email';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: (){
-                if (_formKey.currentState!.validate()) {
-                  print('Имя: ${_nameController.text}');
-                  print('email: ${_emailController.text}');
-                }
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  '/second',
+                  arguments: {
+                    'title': 'Первый вариант',
+                    'count': 10,
+                    'isActive': true,
+                  },
+                );
               }, 
-              child: const Text('Отправить')
+              child: const Text('Вариант 1'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  '/second',
+                  arguments: {
+                    'title': 'Второй вариант',
+                    'count': 20,
+                    'isActive': false,
+                  },
+                );
+              }, 
+              child: const Text('Вариант 2'),
             ),
           ],
         ),
@@ -63,6 +46,44 @@ class _MyFormState extends State<MyForm> {
     );
   }
 }
+
+class SecondScreen extends StatelessWidget {
+  final String title;
+  final int count;
+  final bool isActive;
+  
+  const SecondScreen({
+    super.key,
+    required this.title,
+    required this.count,
+    required this.isActive,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Заголовок: $title', style: const TextStyle(fontSize: 20)),
+            Text('Число: $count', style: const TextStyle(fontSize: 18)),
+            Text('Активно: $isActive', style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              }, 
+              child: const Text('Назад'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 void main() => runApp(const MainApp());
 
 class MainApp extends StatelessWidget {
@@ -72,12 +93,31 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(title: Text('App')),
-        body: Center(
-          child: MyForm()
-          )
-      ),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const MainScreen(),
+      },
+      onGenerateRoute: (RouteSettings settings) {
+        switch (settings.name) {
+          case '/second':
+            final args = settings.arguments as Map<String, dynamic>? ?? {};
+            
+            return MaterialPageRoute(
+              builder: (context) => SecondScreen(
+                title: args['title'] ?? 'Без названия',
+                count: args['count'] ?? 0,
+                isActive: args['isActive'] ?? false,
+              ),
+            );
+          
+          default:
+            return MaterialPageRoute(
+              builder: (context) => const Scaffold(
+                body: Center(child: Text('Страница не найдена')),
+              ),
+            );
+        }
+      },
     );
   }
 }
